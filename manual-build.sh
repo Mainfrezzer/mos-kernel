@@ -1,6 +1,7 @@
 #!/bin/bash
 # This is just an example how you could build the Kernel manually
-# Please make sure to run this in a containerized environment
+# Please make sure to run this in a containerized environment(preferrably
+# in a Devuan Daedalus LXC container)
 
 # Set your Kernel version here!
 KERNEL_V=6.18.15
