@@ -105,7 +105,7 @@ cd $WORK_DIR/$KERNEL_V
 
 # Create microcode
 cd $WORK_DIR
-INTEL_MICROCODE=$(curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} -s https://api.github.com/repos/intel/Intel-Linux-Processor-Microcode-Data-Files/releases/latest | jq -r '.tag_name')
+INTEL_MICROCODE=$(curl -s https://api.github.com/repos/intel/Intel-Linux-Processor-Microcode-Data-Files/releases/latest | jq -r '.tag_name')
 git clone --branch $INTEL_MICROCODE --single-branch --depth 1 https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files
 rm -f $WORK_DIR/Intel-Linux-Processor-Microcode-Data-Files/intel-ucode/0f-*
 cd $WORK_DIR/Intel-Linux-Processor-Microcode-Data-Files/intel-ucode
