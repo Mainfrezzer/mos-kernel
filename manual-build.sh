@@ -38,7 +38,7 @@ tar -C $BUILD_DIR/$KERNEL_V --strip-components=1 -xf $BUILD_DIR/linux-$KERNEL_V.
 cd $BUILD_DIR/$KERNEL_V
 # COPY KERNEL .config FILE HERE INTO THIS DIRECTORY!
 #cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
-if [ $BUILD_DIR/$KERNEL_V/.config ] ; then
+if [ ! -f $BUILD_DIR/$KERNEL_V/.config ] ; then
   echo "Please copy the Kernel .config file!"
   exit 0
 fi
