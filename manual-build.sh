@@ -1,0 +1,133 @@
+#!/bin/bash
+# This is just an example how you could build the Kernel manually
+# Please make sure to run this in a containerized environment
+
+# Set your Kernel version here!
+KERNEL_V=6.18.15
+
+# Don't forget to copy the Kernel config file from the repo:
+# https://github.com/ich777/mos-kernel/tree/master/kernel-config
+# for your Kernel down below in the marked section!
+
+# Install necessary dependencies:
+apt-get update
+apt-get -y install wget curl nano jq procps build-essential
+
+# Set Variables and create directories
+WORK_DIR=/root/mos-kernel
+BUILD_DIR=${WORK_DIR}/build
+rm -rf /lib/modules /lib/firmware
+mkdir -p $BUILD_DIR $WORK_DIR/$KERNEL_V $BUILD_DIR/$KERNEL_V $BUILD_DIR/microcode/kernel/x86/microcode $BUILD_DIR/microcode/kernel/firmware/amd-ucode /lib/modules /lib/firmware
+
+# Safety check for Kernel versions ending with 0
+if [ "${KERNEL_V##*.}" == "0" ]; then
+  DL_KERNEL_V="${KERNEL_V%.*}"
+else
+  DL_KERNEL_V=$KERNEL_V
+fi
+
+# Download and extract Kernel
+cd $BUILD_DIR
+wget -O $BUILD_DIR/linux-$KERNEL_V.tar.xz https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_V%%.*}.x/linux-$DL_KERNEL_V.tar.xz;
+tar -C $BUILD_DIR/$KERNEL_V --strip-components=1 -xf $BUILD_DIR/linux-$KERNEL_V.tar.xz
+
+###############################################################
+# Copy Kernel config
+###############################################################
+cd $BUILD_DIR/$KERNEL_V
+# COPY KERNEL .config FILE HERE INTO THIS DIRECTORY!
+#cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
+if [ $BUILD_DIR/$KERNEL_V/.config ] ; then
+  echo "Please copy the Kernel .config file!"
+  exit 0
+fi
+###############################################################
+
+# Compile Kernel
+make oldconfig
+make -j$(nproc --all)
+
+# Copy image to output directory
+cp $BUILD_DIR/$KERNEL_V/arch/x86_64/boot/bzImage $WORK_DIR/image
+
+# Not needed for manual builds
+## Save Kernel
+#echo "Creating Kernel archive..."
+#XZ_OPT="-9 -T0" tar -cJf $WORK_DIR/${KERNEL_V}-mos.tar.xz .
+
+# Install Modules to /lib/modules
+make modules_install -j$(nproc --all)
+        
+# Clone Linux Firmware
+cd $WORK_DIR
+git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git $WORK_DIR/firmware-source
+cd $WORK_DIR/firmware-source
+FW_COMMIT=$(git rev-parse HEAD)
+FW_COMMIT_SHORT=$(git rev-parse --short HEAD)
+$WORK_DIR/firmware-source/copy-firmware.sh $WORK_DIR/linux-firmware
+
+# Set MODULE_PATH variable
+cd $WORK_DIR
+MODULE_PATH="/lib/modules/${KERNEL_V}-mos"
+
+# Generate file list
+find "$MODULE_PATH" -name "*.ko*" -exec modinfo {} \; 2>/dev/null | \
+  grep "^firmware:" | cut -d: -f2- | sed 's/^[[:space:]]*//' | sort -u \
+  > "$WORK_DIR/required_firmware"
+
+# Make sure to copy all files including symlinks
+while read fw; do
+  full="$WORK_DIR/linux-firmware/$fw"
+  if [ -L "$full" ]; then
+echo "$fw" >> "$WORK_DIR/required_firmware_complete"
+target=$(readlink -f "$full")
+rel="${target#$WORK_DIR/linux-firmware/}"
+echo "$rel" >> "$WORK_DIR/required_firmware_complete"
+  elif [ -f "$full" ]; then
+echo "$fw" >> "$WORK_DIR/required_firmware_complete"
+  else
+echo "Missing Firmware: $fw" >&2
+  fi
+done < "$WORK_DIR/required_firmware"
+
+# Remove duplicates
+sort -u -o "$WORK_DIR/required_firmware_complete" "$WORK_DIR/required_firmware_complete"
+
+# Copy firmware files
+rsync -av --files-from="$WORK_DIR/required_firmware_complete" "$WORK_DIR/linux-firmware/" /lib/firmware/
+
+# Copy over Modules and Firmware files and make sure to save attributes
+cp -a /lib/modules $WORK_DIR/$KERNEL_V/
+cp -a /lib/firmware $WORK_DIR/$KERNEL_V/
+rm -rf $WORK_DIR/$KERNEL_V/lib/modules/${KERNEL_V}-mos/build
+cd $WORK_DIR/$KERNEL_V
+
+# Create microcode
+cd $WORK_DIR
+INTEL_MICROCODE=$(curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} -s https://api.github.com/repos/intel/Intel-Linux-Processor-Microcode-Data-Files/releases/latest | jq -r '.tag_name')
+git clone --branch $INTEL_MICROCODE --single-branch --depth 1 https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files
+rm -f $WORK_DIR/Intel-Linux-Processor-Microcode-Data-Files/intel-ucode/0f-*
+cd $WORK_DIR/Intel-Linux-Processor-Microcode-Data-Files/intel-ucode
+iucode_tool -tb . -w $BUILD_DIR/microcode/kernel/x86/microcode/GenuineIntel.bin
+cp $WORK_DIR/firmware-source/amd-ucode/microcode_amd*.bin $BUILD_DIR/microcode/kernel/firmware/amd-ucode/
+cd $BUILD_DIR/microcode
+find . | cpio -o -H newc > $WORK_DIR/microcode
+
+# Copy licenses and copying to drivers
+mkdir -p $WORK_DIR/$KERNEL_V/usr/share/doc/linux/LICENSES/preferred
+cp $BUILD_DIR/$KERNEL_V/COPYING $WORK_DIR/$KERNEL_V/usr/share/doc/linux/COPYING
+cp $BUILD_DIR/$KERNEL_V/LICENSES/preferred/* $WORK_DIR/$KERNEL_V/usr/share/doc/linux/LICENSES/preferred/
+
+# Create drivers image
+mksquashfs $WORK_DIR/$KERNEL_V $WORK_DIR/drivers -noappend -comp xz
+
+# Create md5 sums
+md5sum $WORK_DIR/image | awk '{print $1}' > $WORK_DIR/image.md5
+md5sum $WORK_DIR/drivers | awk '{print $1}' > $WORK_DIR/drivers.md5
+md5sum $WORK_DIR/microcode | awk '{print $1}' > $WORK_DIR/microcode.md5
+
+# This will leave you with the required Kernel files for MOS:
+# - image
+# - drivers
+# - microcode
+# and their .md5 checksums
