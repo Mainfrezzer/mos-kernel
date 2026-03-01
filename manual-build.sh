@@ -12,7 +12,7 @@ KERNEL_V=6.18.15
 
 # Install necessary dependencies:
 apt-get update
-apt-get -y install wget curl nano jq procps build-essential
+apt-get -y install wget curl nano jq procps build-essential bison flex bc libelf-dev libssl-dev iucode-tool cpio squashfs-tools python3 kmod
 
 # Set Variables and create directories
 WORK_DIR=/root/mos-kernel
