@@ -143,7 +143,7 @@ jobs:
         WORK_DIR=${{ github.workspace }}
         BUILD_DIR=${WORK_DIR}/build
         KERNEL_V=${{ github.event.inputs.kernel_version }}
-        rm -rf $WORK_DIR/$KERNEL_V $BUILD_DIR /lib/modules /lib/firmware
+        rm -rf $WORK_DIR/$KERNEL_V $BUILD_DIR/$KERNEL_V /lib/modules /lib/firmware
         mkdir -p $BUILD_DIR $WORK_DIR/$KERNEL_V $BUILD_DIR/$KERNEL_V /lib/modules /lib/firmware
 
         # Safety check for Kernel versions ending with 0
