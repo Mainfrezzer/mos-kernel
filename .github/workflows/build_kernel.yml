@@ -166,7 +166,7 @@ jobs:
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc --all)
 
         # Copy image to output directory
-        cp $BUILD_DIR/$KERNEL_V/arch/arm64/boot/Image $WORK_DIR/image_arm
+        cp $BUILD_DIR/$KERNEL_V/arch/arm64/boot/Image $WORK_DIR/image_arm64
 
         # Save Kernel
         echo "Creating Kernel archive..."
@@ -225,7 +225,7 @@ jobs:
 
         # Create md5 sums
         md5sum $WORK_DIR/image_arm64 | awk '{print $1}' > $WORK_DIR/image_arm64.md5
-        md5sum $WORK_DIR/drivers_arm64 | awk '{print $1}' > $WORK_DIR/driversarm64.md5
+        md5sum $WORK_DIR/drivers_arm64 | awk '{print $1}' > $WORK_DIR/drivers_arm64.md5
         md5sum $WORK_DIR/${KERNEL_V}-mos_arm64.tar.xz | awk '{print $1}' > $WORK_DIR/${KERNEL_V}-mos_arm64.tar.xz.md5
 
     - name: Create and Upload Release
