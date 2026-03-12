@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install dependencies
-apt-get update && apt-get -y install build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools
+apt-get update && apt-get -y install build-essential gcc-aarch64-linux-gnu flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools
 
 # Set Variables and create directories
 DEFAULT_DIR=/root/runner_workdir/mos-kernel/mos-kernel
@@ -20,6 +20,12 @@ cd $BUILD_DIR/$KERNEL_V
 # Download config and start oldconfig
 wget -O $BUILD_DIR/$KERNEL_V/.config "https://raw.githubusercontent.com/ich777/mos-kernel/refs/heads/master/kernel-config/config"
 make oldconfig
+
+#rm -rf $BUILD_DIR/$KERNEL_V/.config
+
+# Download config for arm64 and start oldconfig
+wget -O $BUILD_DIR/$KERNEL_V/.config "https://raw.githubusercontent.com/ich777/mos-kernel/refs/heads/master/kernel-config/config_arm"
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
 
 # Cleanup
 rm -rf $BUILD_DIR $WORK_DIR/$KERNEL_V
