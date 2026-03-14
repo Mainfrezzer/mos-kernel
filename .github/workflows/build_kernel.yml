@@ -14,6 +14,7 @@ jobs:
   build_kernel:
     runs-on: self-hosted
     permissions:
+      actions: write
       contents: write
 
     steps:
