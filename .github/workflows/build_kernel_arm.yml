@@ -53,8 +53,8 @@ jobs:
         cp $WORK_DIR/kernel-config/config_arm $BUILD_DIR/$KERNEL_V/.config
 
         # Compile Kernel
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- oldconfig
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc --all)
+        make oldconfig
+        make -j$(nproc --all)
 
         # Copy image to output directory
         cp $BUILD_DIR/$KERNEL_V/arch/arm64/boot/Image $WORK_DIR/image_arm64
@@ -64,11 +64,14 @@ jobs:
         XZ_OPT="-9 -T0" tar -cJf $WORK_DIR/${KERNEL_V}-mos_arm64.tar.xz .
 
         # Install Modules to /lib/modules
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc --all) modules_install
-
-        # Remove old firmware files
+        make -j$(nproc --all) modules_install
+        # Clone Linux Firmware
         cd $WORK_DIR
-        rm -rf $WORK_DIR/required_firmware $WORK_DIR/required_firmware_complete
+        git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git $WORK_DIR/firmware-source
+        cd $WORK_DIR/firmware-source
+        FW_COMMIT=$(git rev-parse HEAD)
+        FW_COMMIT_SHORT=$(git rev-parse --short HEAD)
+        $WORK_DIR/firmware-source/copy-firmware.sh $WORK_DIR/linux-firmware
 
         # Set MODULE_PATH variable
         cd $WORK_DIR
