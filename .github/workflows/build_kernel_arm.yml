@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_kernel:
-    runs-on: self-hosted
+    runs-on: [self-hosted, ARM64]
     environment: build
     permissions:
       actions: write
