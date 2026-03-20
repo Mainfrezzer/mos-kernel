@@ -65,6 +65,7 @@ jobs:
 
         # Install Modules to /lib/modules
         make -j$(nproc --all) modules_install
+
         # Clone Linux Firmware
         cd $WORK_DIR
         git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git $WORK_DIR/firmware-source
