@@ -25,7 +25,7 @@ jobs:
         fetch-depth: 1
 
     - name: Install dependencies
-      run: apt-get update && apt-get -y install build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils
+      run: apt-get update && apt-get -y install build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils zip
 
     - name: Compile Kernel for arm64
       run: |
@@ -118,10 +118,18 @@ jobs:
         # Create drivers image
         mksquashfs $WORK_DIR/$KERNEL_V $WORK_DIR/drivers_arm64 -noappend -comp xz
 
+        # Pack device tree files
+        cp -R $BUILD_DIR/$KERNEL_V/arch/arm64/boot/dts $BUILD_DIR/
+        find $BUILD_DIR/dts -type f ! -name "*.dtb" -delete
+        find $BUILD_DIR/dts -type d -empty -delete
+        cd $BUILD_DIR/dts
+        zip -9 -r $WORK_DIR/${KERNEL_V}-device_tree_files_arm64.zip .
+
         # Create md5 sums
         md5sum $WORK_DIR/image_arm64 | awk '{print $1}' > $WORK_DIR/image_arm64.md5
         md5sum $WORK_DIR/drivers_arm64 | awk '{print $1}' > $WORK_DIR/drivers_arm64.md5
         md5sum $WORK_DIR/${KERNEL_V}-mos_arm64.tar.xz | awk '{print $1}' > $WORK_DIR/${KERNEL_V}-mos_arm64.tar.xz.md5
+        md5sum $WORK_DIR/${KERNEL_V}-device_tree_files_arm64.zip | awk '{print $1}' > $WORK_DIR/${KERNEL_V}-device_tree_files_arm64.zip.md5
 
     - name: Create and Upload Release
       uses: softprops/action-gh-release@v2
@@ -139,6 +147,7 @@ jobs:
           ${{ github.workspace }}/image*
           ${{ github.workspace }}/drivers*
           ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-mos*
+          ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-device_tree_files_arm64.zip*
         overwrite_files: true
         fail_on_unmatched_files: false
       env:
