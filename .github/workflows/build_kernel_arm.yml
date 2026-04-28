@@ -136,12 +136,6 @@ jobs:
       with:
         tag_name: ${{ github.event.inputs.kernel_version }}-mos
         name: "${{ github.event.inputs.kernel_version }}-mos"
-        body: |
-          Custom MOS Kernel and Drivers: ${{ github.event.inputs.kernel_version }}-mos
-
-          ### Release contents:
-          [Kernel](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/?h=v${{ github.event.inputs.kernel_version }}): ${{ github.event.inputs.kernel_version }}
-          [Firmware](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/commit/?id=${{ env.FW_COMMIT }}): ${{ env.FW_COMMIT_SHORT }}
 
         files: |
           ${{ github.workspace }}/image*
