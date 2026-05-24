@@ -69,6 +69,14 @@ jobs:
         cd $BUILD_DIR/$KERNEL_V
         cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
 
+        # Apply Patches
+        PATCHES=$(find $WORK_DIR/kernel-patches/ -maxdepth 1 -name *.patch 2>/dev/null)
+        cd $BUILD_DIR/$KERNEL_V
+        for patch in $PATCHES
+        do
+          patch -p1 < $patch
+        done
+
         # Compile Kernel
         make oldconfig
         make -j$(nproc --all)
