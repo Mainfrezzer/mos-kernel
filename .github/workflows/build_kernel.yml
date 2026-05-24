@@ -74,6 +74,7 @@ jobs:
         cd $BUILD_DIR/$KERNEL_V
         for patch in $PATCHES
         do
+          echo "Applying patch: ${patch##*/}"
           patch -p1 < $patch
         done
 
