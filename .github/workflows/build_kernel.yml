@@ -70,7 +70,7 @@ jobs:
 
         # Save Kernel
         echo "Creating Kernel archive..."
-        XZ_OPT="-9 -T0" tar -cJf $WORK_DIR/${KERNEL_V}-mos_amd64.tar.xz .
+        XZ_OPT="-9 -T0" sudo tar -cJf $WORK_DIR/${KERNEL_V}-mos_amd64.tar.xz .
 
         # Install Modules to /lib/modules
         sudo make modules_install -j$(nproc --all)
