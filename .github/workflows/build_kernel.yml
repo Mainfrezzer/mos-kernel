@@ -58,7 +58,7 @@ jobs:
         for patch in $PATCHES
         do
           echo "Applying patch: ${patch##*/}"
-          patch -p1 < $patch
+          sudo patch -p1 < $patch
         done
 
         # Compile Kernel
