@@ -25,7 +25,7 @@ jobs:
         fetch-depth: 1
 
     - name: Install dependencies
-      run: sudo apt-get update && apt-get -y install gcc-aarch64-linux-gnu build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils iucode-tool
+      run: sudo apt-get update && sudo apt-get -y install gcc-aarch64-linux-gnu build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils iucode-tool
 
     - name: Compile Kernel for amd64
       run: |
