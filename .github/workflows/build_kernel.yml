@@ -45,7 +45,7 @@ jobs:
 
         # Download and extract Kernel
         cd $BUILD_DIR
-        wget -O $BUILD_DIR/linux-$KERNEL_V.tar.xz https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_V%%.*}.x/linux-$DL_KERNEL_V.tar.xz;
+        sudo wget -O $BUILD_DIR/linux-$KERNEL_V.tar.xz https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_V%%.*}.x/linux-$DL_KERNEL_V.tar.xz;
         tar -C $BUILD_DIR/$KERNEL_V --strip-components=1 -xf $BUILD_DIR/linux-$KERNEL_V.tar.xz
 
         # Copy Kernel config
