@@ -46,11 +46,11 @@ jobs:
         # Download and extract Kernel
         cd $BUILD_DIR
         sudo wget -O $BUILD_DIR/linux-$KERNEL_V.tar.xz https://cdn.kernel.org/pub/linux/kernel/v${KERNEL_V%%.*}.x/linux-$DL_KERNEL_V.tar.xz;
-        tar -C $BUILD_DIR/$KERNEL_V --strip-components=1 -xf $BUILD_DIR/linux-$KERNEL_V.tar.xz
+        sudo tar -C $BUILD_DIR/$KERNEL_V --strip-components=1 -xf $BUILD_DIR/linux-$KERNEL_V.tar.xz
 
         # Copy Kernel config
         cd $BUILD_DIR/$KERNEL_V
-        cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
+        sudo cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
 
         # Apply Patches
         PATCHES=$(find $WORK_DIR/kernel-patches/ -maxdepth 1 -name *.patch 2>/dev/null)
@@ -62,11 +62,11 @@ jobs:
         done
 
         # Compile Kernel
-        make olddefconfig
-        make -j$(nproc --all)
+        sudo make olddefconfig
+        sudo make -j$(nproc --all)
 
         # Copy image to output directory
-        cp $BUILD_DIR/$KERNEL_V/arch/x86_64/boot/bzImage $WORK_DIR/image
+        sudo cp $BUILD_DIR/$KERNEL_V/arch/x86_64/boot/bzImage $WORK_DIR/image
 
         # Save Kernel
         echo "Creating Kernel archive..."
