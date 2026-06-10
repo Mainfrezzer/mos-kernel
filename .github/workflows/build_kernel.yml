@@ -115,6 +115,7 @@ jobs:
 
         # TODO
         # Make sure the wifi firmware is fully copied cause for some reason it doesnt, meh!
+        rsync -av $WORK_DIR/linux-firmware/intel/iwlwifi/ /lib/firmware
 
         # Copy over Modules and Firmware files and make sure to save attributes
         cp -a /lib/modules $WORK_DIR/$KERNEL_V/
