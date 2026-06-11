@@ -91,6 +91,17 @@ jobs:
         find "$MODULE_PATH" -name "*.ko*" -exec modinfo {} \; 2>/dev/null | \
           grep "^firmware:" | cut -d: -f2- | sed 's/^[[:space:]]*//' | sort -u \
           > "$WORK_DIR/required_firmware"
+          
+        # ensure all intel firmware is there
+        if [ -d "$WORK_DIR/linux-firmware/intel/iwlwifi" ]; then
+          find "$WORK_DIR/linux-firmware/intel/iwlwifi" \
+            \( -name 'iwlwifi-*.ucode' -o -name 'iwlwifi-*.pnvm' \) | \
+          while read -r full; do
+            rel="$(basename "$full")"
+            ln -sf "intel/iwlwifi/$rel" "$WORK_DIR/linux-firmware/$rel"
+            echo "$rel" >> "$WORK_DIR/required_firmware"
+          done
+        fi
 
         # Make sure to copy all files including symlinks
         while read fw; do
@@ -112,10 +123,6 @@ jobs:
 
         # Copy firmware files
         sudo rsync -av --files-from="$WORK_DIR/required_firmware_complete" "$WORK_DIR/linux-firmware/" /lib/firmware/
-
-        # TODO
-        # Make sure the wifi firmware is fully copied cause for some reason it doesnt, meh!
-        sudo rsync -av $WORK_DIR/linux-firmware/intel/iwlwifi/ /lib/firmware
 
         # Copy over Modules and Firmware files and make sure to save attributes
         sudo cp -a /lib/modules $WORK_DIR/$KERNEL_V/
