@@ -103,6 +103,7 @@ jobs:
           > "$WORK_DIR/required_firmware"
           
         # ensure all intel firmware is there
+        if [ "$KERNEL_WIFI" = "yes" ]; then
         if [ -d "$WORK_DIR/linux-firmware/intel/iwlwifi" ]; then
           find "$WORK_DIR/linux-firmware/intel/iwlwifi" \
             \( -name 'iwlwifi-*.ucode' -o -name 'iwlwifi-*.pnvm' \) | \
@@ -111,6 +112,7 @@ jobs:
             ln -sf "intel/iwlwifi/$rel" "$WORK_DIR/linux-firmware/$rel"
             echo "$rel" >> "$WORK_DIR/required_firmware"
           done
+        fi
         fi
 
         # Make sure to copy all files including symlinks
