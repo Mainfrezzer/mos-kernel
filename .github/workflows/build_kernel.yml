@@ -57,7 +57,7 @@ jobs:
         # Copy Kernel config
         cd $BUILD_DIR/$KERNEL_V
         if [ "$KERNEL_WIFI" = "yes" ]; then
-        sudo cp $WORK_DIR/kernel-config/config-wifi $BUILD_DIR/$KERNEL_V/.config
+        sudo cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
         else
         sudo cp $WORK_DIR/kernel-config/config $BUILD_DIR/$KERNEL_V/.config
         fi
